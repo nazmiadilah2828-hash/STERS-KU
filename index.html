@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>STRES-KU · E-LKPD Pengelolaan Stres Akademik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F2F8F7; --surface:#FFFFFF; --ink:#12262B; --muted:#47646A; --line:#D3E3E1;
+  --soft:#E0F0EE; --primary:#0F6B73; --on-primary:#FFFFFF; --accent:#F2A93B; --accent-soft:#FDF0D8;
+  --ok:#1F7A4D; --ok-soft:#DDF3E7; --warn:#9A5B00; --warn-soft:#FDEBCB; --high:#A23B3B; --high-soft:#F8DEDE;
+  --head:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --body:'Atkinson Hyperlegible','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1A1D; --surface:#152429; --ink:#E6F1F0; --muted:#9DB6B8; --line:#264045;
+    --soft:#1B3237; --primary:#5CC4C9; --on-primary:#08201F; --accent:#F2B957; --accent-soft:#3A2F17;
+    --ok:#6FD3A0; --ok-soft:#173528; --warn:#F2B957; --warn-soft:#3A2F17; --high:#F29A9A; --high-soft:#3F1F22;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1A1D; --surface:#152429; --ink:#E6F1F0; --muted:#9DB6B8; --line:#264045;
+  --soft:#1B3237; --primary:#5CC4C9; --on-primary:#08201F; --accent:#F2B957; --accent-soft:#3A2F17;
+  --ok:#6FD3A0; --ok-soft:#173528; --warn:#F2B957; --warn-soft:#3A2F17; --high:#F29A9A; --high-soft:#3F1F22;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+h1,h2,h3{font-family:var(--head);line-height:1.15;margin:0 0 .5em;letter-spacing:-.01em}
+h1{font-size:clamp(2.4rem,8vw,4.2rem);font-weight:800}
+h2{font-size:clamp(1.6rem,4.5vw,2.2rem);font-weight:700}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0 0 1em;max-width:68ch}
+a{color:var(--primary)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:980px;margin:0 auto;padding:0 18px}
+
+/* header + stepper */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:12px;padding:10px 18px;max-width:980px;margin:0 auto}
+.brand{font-family:var(--head);font-weight:800;font-size:1.25rem;color:var(--primary);white-space:nowrap}
+.bar{flex:1;height:8px;background:var(--soft);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--primary);border-radius:99px;transition:width .4s}
+.iconbtn{background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:10px;min-width:44px;min-height:44px;font:inherit;cursor:pointer}
+.steps{display:flex;gap:6px;overflow-x:auto;padding:0 18px 10px;max-width:980px;margin:0 auto;scrollbar-width:thin}
+.steps button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:99px;padding:8px 14px;min-height:40px;font:inherit;font-size:.9rem;cursor:pointer}
+.steps button[aria-current="step"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary);font-weight:700}
+.steps button.done:not([aria-current="step"]){color:var(--ink);border-color:var(--primary)}
+
+/* hero */
+.hero{display:grid;gap:28px;align-items:center;padding:40px 0 20px}
+@media(min-width:760px){.hero{grid-template-columns:1.15fr .85fr}}
+.hero .lead{font-size:1.15rem;color:var(--muted)}
+.tag{display:inline-block;background:var(--accent-soft);color:var(--ink);border-radius:8px;padding:4px 10px;font-size:.9rem;margin-bottom:14px}
+.breath{display:flex;flex-direction:column;align-items:center;gap:14px}
+.orb-box{width:min(78vw,300px);aspect-ratio:1;display:grid;place-items:center;position:relative}
+.orb-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed var(--line)}
+.orb{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--primary),color-mix(in srgb,var(--primary) 55%,var(--bg)));transform:scale(.6);transition:transform 4s ease-in-out;display:grid;place-items:center;opacity:.92}
+.orb-label{position:absolute;font-family:var(--head);font-weight:700;font-size:1.25rem;color:var(--on-primary);text-align:center;pointer-events:none;padding:0 20px}
+.orb-sec{font-size:2.4rem;display:block;line-height:1}
+@media(prefers-reduced-motion:reduce){.orb{transition:none}}
+
+/* content blocks */
+section.panel{display:none;padding:28px 0 56px}
+section.panel.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;margin:0 0 18px}
+.card.soft{background:var(--soft);border-color:transparent}
+.card.note{background:var(--accent-soft);border-color:transparent}
+.grid2{display:grid;gap:16px}
+@media(min-width:700px){.grid2{grid-template-columns:1fr 1fr}}
+.stage{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px}
+.stage span{background:var(--soft);border-radius:8px;padding:4px 12px;font-size:.9rem;color:var(--muted)}
+.stage span b{color:var(--primary)}
+label,.lbl{display:block;font-weight:700;margin:0 0 6px}
+input[type=text],input[type=date],input[type=number],select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px}
+textarea{min-height:96px;resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.8}
+.field{margin:0 0 16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--primary);color:var(--on-primary);border:0;border-radius:12px;padding:12px 20px;min-height:46px;font:inherit;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--primary);border:1.5px solid var(--primary)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;flex-wrap:wrap}
+details{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:0 0 10px}
+summary{cursor:pointer;padding:14px 16px;font-weight:700;min-height:44px;list-style-position:inside}
+details>div{padding:0 16px 14px}
+ul.clean{margin:0 0 1em;padding-left:1.2em}
+ul.clean li{margin:.25em 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0}
+.chip span{display:block;border:1.5px solid var(--line);background:var(--surface);border-radius:99px;padding:8px 14px;min-height:40px}
+.chip input:checked+span{background:var(--primary);color:var(--on-primary);border-color:var(--primary);font-weight:700}
+.chip input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+
+/* scale */
+.q{border-top:1px solid var(--line);padding:14px 0}
+.q:first-of-type{border-top:0}
+.q p{margin:0 0 8px;font-weight:700}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.opts label{margin:0;font-weight:400;position:relative}
+.opts input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.opts span{display:block;text-align:center;border:1.5px solid var(--line);border-radius:10px;padding:8px 2px;font-size:.85rem;min-height:44px;background:var(--surface);line-height:1.25}
+.opts input:checked+span{background:var(--primary);color:var(--on-primary);border-color:var(--primary);font-weight:700}
+.opts input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.result{border-radius:14px;padding:16px;margin-top:16px}
+.result.r1{background:var(--ok-soft)} .result.r2{background:var(--warn-soft)} .result.r3{background:var(--high-soft)}
+.meter{height:12px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;background:var(--primary)}
+
+/* tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 16px;padding-bottom:4px}
+.tabs button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 14px;min-height:44px;font:inherit;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary);font-weight:700}
+.tp{display:none}.tp.on{display:block}
+
+/* tables / planner */
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-size:.9rem}
+.task{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 8px;background:var(--surface)}
+.task.done .tt{text-decoration:line-through;color:var(--muted)}
+.task input[type=checkbox]{width:22px;height:22px;flex:0 0 auto}
+.task .tt{flex:1}
+.pill{font-size:.8rem;border-radius:99px;padding:2px 10px;background:var(--soft)}
+.pill.t{background:var(--high-soft)} .pill.s{background:var(--warn-soft)} .pill.r{background:var(--ok-soft)}
+
+/* quiz */
+.opt{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 8px;min-height:46px;cursor:pointer}
+.opt.good{background:var(--ok-soft);border-color:var(--ok)}
+.opt.bad{background:var(--high-soft);border-color:var(--high)}
+.fb{margin:8px 0 0;padding:10px 12px;border-radius:10px;background:var(--soft)}
+
+pre.sum{white-space:pre-wrap;word-break:break-word;font-family:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 14px;font-size:.95rem}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.95rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:30;max-width:90vw}
+.toast.on{opacity:1}
+footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--muted);font-size:.9rem}
+@media print{
+  .top,.nav,.btn,.no-print,footer,.toast{display:none!important}
+  body{background:#fff;color:#000}
+  section.panel{display:none!important}
+  section#p-hasil{display:block!important}
+  pre.sum{border:0;padding:0}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <span class="brand">STRES-KU</span>
+    <div class="bar" role="progressbar" aria-label="Progres belajar" aria-valuemin="0" aria-valuemax="100" id="pbar"><i id="pfill"></i></div>
+    <button class="iconbtn" id="themeBtn" aria-label="Ganti tema terang atau gelap" title="Ganti tema">◐</button>
+  </div>
+  <nav class="steps" id="steps" aria-label="Tahapan E-LKPD"></nav>
+</header>
+
+<main class="wrap">
+
+<!-- BERANDA -->
+<section class="panel" id="p-mulai">
+  <div class="hero">
+    <div>
+      <span class="tag">E-LKPD untuk siswa SMKN 11 Bandung</span>
+      <h1>STRES-KU</h1>
+      <p class="lead">Kenali tekanan belajar, pahami pemicunya, lalu latih cara mengelolanya. Semua dikerjakan pelan-pelan, dari HP juga bisa.</p>
+      <div class="row"><button class="btn" data-go="memahami">Mulai belajar</button></div>
+    </div>
+    <div class="breath">
+      <div class="orb-box" aria-hidden="true"><div class="orb-ring"></div><div class="orb" id="heroOrb"></div><div class="orb-label" id="heroLbl">Napas pelan dulu</div></div>
+      <small style="color:var(--muted)">Ikuti lingkaran ini sebentar sebelum mulai.</small>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Identitas</h2>
+    <div class="grid2">
+      <div class="field"><label for="nama">Nama</label><input type="text" id="nama" data-k="nama" autocomplete="name" placeholder="Nama lengkap"></div>
+      <div class="field"><label for="kelas">Kelas</label><input type="text" id="kelas" data-k="kelas" placeholder="Contoh: XI"></div>
+      <div class="field"><label for="jurusan">Jurusan</label><input type="text" id="jurusan" data-k="jurusan" placeholder="Jurusan / kompetensi keahlian"></div>
+      <div class="field"><label for="tgl">Tanggal</label><input type="date" id="tgl" data-k="tgl"></div>
+    </div>
+  </div>
+
+  <div class="card soft">
+    <h2>Alur belajar</h2>
+    <p>E-LKPD ini memakai pendekatan pembelajaran mendalam. Kamu tidak hanya membaca, tetapi memahami, mencoba, lalu berefleksi supaya ilmunya benar-benar terpakai.</p>
+    <div class="stage"><span><b>Memahami</b> materi dan kasus</span><span><b>Mengaplikasikan</b> teknik langsung</span><span><b>Merefleksikan</b> diri dan komitmen</span></div>
+    <h3>Tujuan pembelajaran</h3>
+    <ul class="clean">
+      <li>Menjelaskan pengertian, penyebab, dan dampak stres akademik.</li>
+      <li>Mengenali tanda dan pemicu stres pada dirimu sendiri.</li>
+      <li>Mempraktikkan teknik napas, pikiran seimbang, dan pengaturan waktu.</li>
+      <li>Menyusun rencana pribadi untuk mengelola stres akademik.</li>
+    </ul>
+    <h3>Petunjuk</h3>
+    <ul class="clean">
+      <li>Kerjakan berurutan lewat tombol di bagian atas atau tombol Lanjut.</li>
+      <li>Jawabanmu tersimpan otomatis di perangkat ini saja dan tidak dikirim ke mana pun.</li>
+      <li>Di akhir, kamu bisa menyalin atau mencetak ringkasan untuk dikumpulkan ke gurumu.</li>
+      <li>Jawab jujur. Tidak ada jawaban benar atau salah di bagian refleksi.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- MEMAHAMI -->
+<section class="panel" id="p-memahami">
+  <h2>Kegiatan 1 · Memahami stres akademik</h2>
+  <div class="stage"><span><b>Memahami</b></span></div>
+  <p>Buka tiap bagian di bawah, lalu kerjakan kasus dan pertanyaannya.</p>
+
+  <details open><summary>Apa itu stres akademik?</summary><div>
+    <p>Stres akademik adalah tekanan yang muncul saat tuntutan belajar terasa lebih besar daripada kemampuan atau waktu yang kita punya. Sedikit stres bisa membuat kita siap dan fokus. Masalah muncul kalau berlangsung lama dan tidak terkelola.</p>
+  </div></details>
+  <details><summary>Pemicu yang sering dialami siswa SMK</summary><div>
+    <ul class="clean">
+      <li>Tugas teori dan praktik yang menumpuk, tenggat berdekatan.</li>
+      <li>Ujian, uji kompetensi, dan target nilai.</li>
+      <li>Kegiatan praktik, proyek, atau PKL yang menguras tenaga.</li>
+      <li>Kerja kelompok dengan pembagian tugas yang tidak seimbang.</li>
+      <li>Jadwal padat, kurang tidur, dan harapan dari guru atau orang tua.</li>
+    </ul>
+  </div></details>
+  <details><summary>Tanda-tandanya</summary><div>
+    <div class="grid2">
+      <div><h3>Tubuh</h3><ul class="clean"><li>Sakit kepala atau perut</li><li>Sulit tidur, mudah lelah</li><li>Jantung berdebar, otot tegang</li></ul></div>
+      <div><h3>Pikiran dan perasaan</h3><ul class="clean"><li>Cemas, mudah marah</li><li>Sulit fokus, sering lupa</li><li>Menunda tugas, merasa tidak mampu</li></ul></div>
+    </div>
+  </div></details>
+  <details><summary>Dampaknya kalau dibiarkan</summary><div>
+    <p>Konsentrasi menurun, nilai dan semangat ikut turun, hubungan dengan teman atau keluarga renggang, dan kesehatan terganggu. Kabar baiknya, stres bisa dikelola dengan latihan sederhana yang akan kamu coba di Kegiatan 3.</p>
+  </div></details>
+
+  <div class="card note" style="margin-top:20px">
+    <h3>Kasus: Dita di minggu padat</h3>
+    <p>Dita, siswa kelas XI, minggu ini punya laporan praktik, ujian produktif hari Kamis, dan tugas kelompok yang temannya belum mengerjakan bagian mereka. Ia tidur jam 2 pagi tiga hari berturut-turut, sering sakit kepala, dan mulai berpikir, "Aku pasti gagal." Akhirnya ia malah menunda laporan karena bingung mulai dari mana.</p>
+  </div>
+  <div class="field"><label for="k1a">1. Apa saja pemicu stres Dita?</label><textarea id="k1a" data-k="k1a" placeholder="Tulis jawabanmu"></textarea></div>
+  <div class="field"><label for="k1b">2. Tanda stres apa yang muncul pada tubuh dan pikirannya?</label><textarea id="k1b" data-k="k1b"></textarea></div>
+  <div class="field"><label for="k1c">3. Kalau kamu temannya, apa satu saran yang akan kamu berikan, dan kenapa?</label><textarea id="k1c" data-k="k1c"></textarea></div>
+  <div class="nav"><button class="btn ghost" data-go="mulai">Kembali</button><button class="btn" data-go="mengenali">Lanjut</button></div>
+</section>
+
+<!-- MENGENALI -->
+<section class="panel" id="p-mengenali">
+  <h2>Kegiatan 2 · Mengenali diri</h2>
+  <div class="stage"><span><b>Memahami</b> dirimu sendiri</span></div>
+  <p>Pikirkan <b>dua minggu terakhir</b>. Pilih seberapa sering kamu mengalami hal berikut.</p>
+  <div class="card note"><b>Penting:</b> ini bukan tes psikologi dan bukan diagnosis. Hasilnya hanya membantu kamu lebih sadar akan kondisimu.</div>
+  <div class="card" id="scaleBox"></div>
+  <div class="row"><button class="btn" id="scaleBtn">Lihat gambaran</button></div>
+  <div id="scaleRes"></div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Pemicu stres yang paling terasa bagiku</h3>
+    <p>Pilih semua yang sesuai.</p>
+    <div class="chips" id="pemicu"></div>
+    <div class="field" style="margin-top:16px"><label for="pemicuLain">Pemicu lain atau cerita singkatnya</label><textarea id="pemicuLain" data-k="pemicuLain"></textarea></div>
+    <div class="field"><label for="reaksi">Biasanya, apa yang kulakukan saat stres?</label><textarea id="reaksi" data-k="reaksi" placeholder="Contoh: scroll medsos, tidur, marah, menunda"></textarea></div>
+  </div>
+  <div class="nav"><button class="btn ghost" data-go="memahami">Kembali</button><button class="btn" data-go="mengaplikasikan">Lanjut</button></div>
+</section>
+
+<!-- MENGAPLIKASIKAN -->
+<section class="panel" id="p-mengaplikasikan">
+  <h2>Kegiatan 3 · Mengaplikasikan</h2>
+  <div class="stage"><span><b>Mengaplikasikan</b> teknik pengelolaan stres</span></div>
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" aria-selected="true" data-tab="napas">Latihan napas</button>
+    <button role="tab" aria-selected="false" data-tab="pikiran">Pikiran seimbang</button>
+    <button role="tab" aria-selected="false" data-tab="waktu">Atur waktu</button>
+    <button role="tab" aria-selected="false" data-tab="rencana">Rencanaku</button>
+  </div>
+
+  <div class="tp on" id="tp-napas">
+    <div class="card" style="text-align:center">
+      <h3>Napas 4-4-6</h3>
+      <p style="margin-inline:auto">Tarik napas 4 detik lewat hidung, tahan 4 detik, hembuskan pelan 6 detik lewat mulut. Ulangi 5 putaran.</p>
+      <div class="orb-box" style="margin:10px auto" aria-live="polite"><div class="orb-ring"></div><div class="orb" id="exOrb"></div><div class="orb-label" id="exLbl">Siap?</div></div>
+      <div class="row" style="justify-content:center"><button class="btn" id="exStart">Mulai latihan</button><button class="btn ghost" id="exStop" disabled>Berhenti</button></div>
+      <p id="exCount" style="margin:12px auto 0;color:var(--muted)"></p>
+    </div>
+    <div class="field"><label for="napasRef">Setelah latihan, apa yang kamu rasakan di tubuh dan pikiranmu?</label><textarea id="napasRef" data-k="napasRef"></textarea></div>
+    <div class="field"><label for="napasKapan">Kapan latihan ini paling berguna untukmu? (misal sebelum ujian, saat deadline)</label><textarea id="napasKapan" data-k="napasKapan"></textarea></div>
+  </div>
+
+  <div class="tp" id="tp-pikiran">
+    <p>Saat stres, pikiran pertama sering terlalu keras pada diri sendiri. Latihan ini mengubahnya jadi pikiran yang lebih seimbang dan realistis.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Situasi</th><th>Pikiran pertama</th><th>Pikiran lebih seimbang</th></tr></thead>
+      <tbody>
+        <tr><td>Nilai ulangan jelek</td><td>Aku bodoh, percuma belajar.</td><td>Nilaiku belum bagus. Aku cek bagian mana yang salah lalu belajar ulang bertahap.</td></tr>
+        <tr><td>Praktik belum selesai</td><td>Aku pasti gagal UKK.</td><td>Aku belum siap penuh, tapi masih ada waktu. Aku bagi latihan per hari.</td></tr>
+        <tr><td>Contoh milikmu 1</td><td><textarea data-k="rf1a" aria-label="Pikiran pertama 1"></textarea></td><td><textarea data-k="rf1b" aria-label="Pikiran seimbang 1"></textarea></td></tr>
+        <tr><td><input type="text" data-k="rf2s" aria-label="Situasi 2" placeholder="Situasi"></td><td><textarea data-k="rf2a" aria-label="Pikiran pertama 2"></textarea></td><td><textarea data-k="rf2b" aria-label="Pikiran seimbang 2"></textarea></td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin-top:12px;color:var(--muted)">Tanya dirimu: "Apa buktinya? Kalau temanku di posisi ini, aku akan bilang apa?"</p>
+    <div class="field"><label for="rf1s">Situasi untuk contoh milikmu 1</label><input type="text" id="rf1s" data-k="rf1s"></div>
+  </div>
+
+  <div class="tp" id="tp-waktu">
+    <p>Tugas besar terasa menakutkan kalau tidak dipecah. Tulis tugasmu, tentukan prioritas, lalu kerjakan satu per satu.</p>
+    <div class="card">
+      <div class="grid2">
+        <div class="field"><label for="tName">Tugas</label><input type="text" id="tName" placeholder="Contoh: Laporan praktik bab 1"></div>
+        <div class="field"><label for="tDue">Tenggat</label><input type="date" id="tDue"></div>
+        <div class="field"><label for="tPri">Prioritas</label><select id="tPri"><option value="t">Tinggi: penting dan mendesak</option><option value="s" selected>Sedang: penting, belum mendesak</option><option value="r">Rendah: bisa menunggu</option></select></div>
+        <div class="field"><label for="tMin">Perkiraan waktu (menit)</label><input type="number" id="tMin" min="5" step="5" value="45"></div>
+      </div>
+      <button class="btn" id="tAdd">Tambah tugas</button>
+    </div>
+    <div id="taskList"></div>
+    <div class="card soft"><b>Tips 25-5:</b> belajar fokus 25 menit tanpa HP, istirahat 5 menit. Setelah 4 putaran, istirahat lebih panjang. Mulai dari tugas berprioritas tinggi yang tenggatnya paling dekat.</div>
+  </div>
+
+  <div class="tp" id="tp-rencana">
+    <div class="card">
+      <h3>Strategi yang akan kupakai</h3>
+      <div class="chips" id="strategi"></div>
+    </div>
+    <div class="card">
+      <h3>Rencana "jika-maka"</h3>
+      <p>Rencana yang spesifik lebih mudah dijalankan. Isi minimal satu.</p>
+      <div class="field"><label for="jm1a">Jika …</label><input type="text" id="jm1a" data-k="jm1a" placeholder="Contoh: aku merasa panik karena tugas menumpuk"></div>
+      <div class="field"><label for="jm1b">maka aku akan …</label><input type="text" id="jm1b" data-k="jm1b" placeholder="Contoh: napas 4-4-6 lima putaran lalu tulis daftar tugas"></div>
+      <div class="field"><label for="jm2a">Jika …</label><input type="text" id="jm2a" data-k="jm2a"></div>
+      <div class="field"><label for="jm2b">maka aku akan …</label><input type="text" id="jm2b" data-k="jm2b"></div>
+    </div>
+  </div>
+
+  <div class="nav"><button class="btn ghost" data-go="mengenali">Kembali</button><button class="btn" data-go="merefleksikan">Lanjut</button></div>
+</section>
+
+<!-- MEREFLEKSIKAN -->
+<section class="panel" id="p-merefleksikan">
+  <h2>Kegiatan 4 · Merefleksikan</h2>
+  <div class="stage"><span><b>Merefleksikan</b> pengalaman dan komitmen</span></div>
+  <p>Tulis dengan jujur. Jurnal ini untuk dirimu dulu, baru untuk gurumu.</p>
+  <div class="field"><label for="j1">1. Hal baru apa yang aku sadari tentang stres akademikku?</label><textarea id="j1" data-k="j1"></textarea></div>
+  <div class="field"><label for="j2">2. Teknik mana yang paling cocok untukku, dan kenapa?</label><textarea id="j2" data-k="j2"></textarea></div>
+  <div class="field"><label for="j3">3. Apa yang masih terasa sulit, dan dukungan apa yang aku butuhkan?</label><textarea id="j3" data-k="j3"></textarea></div>
+  <div class="field"><label for="j4">4. Siapa orang yang bisa kuajak bicara saat stres terasa berat?</label><input type="text" id="j4" data-k="j4" placeholder="Teman, orang tua, wali kelas, guru BK"></div>
+  <div class="card soft">
+    <h3>Komitmen aksiku minggu ini</h3>
+    <div class="field"><label for="a1">Aksi 1</label><input type="text" id="a1" data-k="a1"></div>
+    <div class="field"><label for="a2">Aksi 2</label><input type="text" id="a2" data-k="a2"></div>
+    <div class="field"><label for="a3">Aksi 3</label><input type="text" id="a3" data-k="a3"></div>
+    <div class="field"><label for="mood">Perasaanku sekarang dibanding awal belajar</label>
+      <select id="mood" data-k="mood"><option value="">Pilih</option><option>Lebih tenang</option><option>Sama saja</option><option>Masih cemas, tapi lebih tahu caranya</option><option>Lebih tertekan</option></select></div>
+  </div>
+  <div class="nav"><button class="btn ghost" data-go="mengaplikasikan">Kembali</button><button class="btn" data-go="evaluasi">Lanjut</button></div>
+</section>
+
+<!-- EVALUASI -->
+<section class="panel" id="p-evaluasi">
+  <h2>Evaluasi</h2>
+  <p>Enam pertanyaan untuk mengecek pemahamanmu. Kamu akan langsung melihat penjelasannya.</p>
+  <div id="quiz"></div>
+  <div class="card soft" id="quizScore" hidden></div>
+  <div class="nav"><button class="btn ghost" data-go="merefleksikan">Kembali</button><button class="btn" data-go="hasil">Lihat hasil</button></div>
+</section>
+
+<!-- HASIL -->
+<section class="panel" id="p-hasil">
+  <h2>Hasil dan bantuan</h2>
+  <p class="no-print">Ini ringkasan pekerjaanmu. Salin atau cetak untuk dikumpulkan ke gurumu.</p>
+  <pre class="sum" id="sum"></pre>
+  <div class="row no-print">
+    <button class="btn" id="copyBtn">Salin ringkasan</button>
+    <button class="btn ghost" id="printBtn">Cetak / simpan PDF</button>
+    <button class="btn ghost" id="resetBtn">Hapus semua jawaban</button>
+  </div>
+  <div class="card no-print" style="margin-top:24px">
+    <h3>Simpan ke Google Sheets atau Excel</h3>
+    <p>Satu siswa menghasilkan satu baris data. Guru bisa mengumpulkan semua baris dalam satu sheet.</p>
+    <ul class="clean">
+      <li><b>Cara cepat:</b> klik "Salin 1 baris", buka Google Sheets, pilih sel kosong di baris berikutnya, lalu tempel (Ctrl+V).</li>
+      <li><b>Judul kolom:</b> klik "Salin judul kolom" dan tempel sekali saja di baris pertama sheet.</li>
+      <li><b>Cadangan:</b> "Unduh CSV" menghasilkan file yang bisa dibuka di Sheets lewat File &gt; Impor, atau langsung di Excel.</li>
+    </ul>
+    <div class="row">
+      <button class="btn" id="sendBtn">Kirim ke guru</button>
+      <button class="btn ghost" id="rowBtn">Salin 1 baris</button>
+      <button class="btn ghost" id="headBtn">Salin judul kolom</button>
+      <button class="btn ghost" id="csvBtn">Unduh CSV</button>
+    </div>
+  </div>
+  <div class="card note no-print" style="margin-top:24px">
+    <h3>Kapan perlu bercerita ke orang lain?</h3>
+    <p>Kalau stres berlangsung berminggu-minggu, mengganggu tidur, makan, atau belajarmu, atau kamu merasa putus asa, jangan dipendam. Ceritakan ke guru BK, wali kelas, orang tua, atau orang yang kamu percaya. Meminta bantuan itu langkah yang kuat, bukan tanda lemah.</p>
+    <p>Kalau kamu merasa ingin menyakiti diri sendiri, segera hubungi orang dewasa terdekat atau layanan kesehatan jiwa Kemenkes di 119 ekstensi 8.</p>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">E-LKPD STRES-KU · Pengembangan bahan ajar pengelolaan stres akademik berbasis pembelajaran mendalam · SMKN 11 Bandung. Konten ini untuk edukasi dan bukan pengganti layanan konseling atau psikologis.</div></footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+'use strict';
+var KEY='stresku_v1';
+var STEPS=[['mulai','Beranda'],['memahami','1 Memahami'],['mengenali','2 Mengenali diri'],['mengaplikasikan','3 Mengaplikasikan'],['merefleksikan','4 Merefleksikan'],['evaluasi','Evaluasi'],['hasil','Hasil']];
+var S={f:{},scale:{},pemicu:[],strategi:[],tasks:[],quiz:{},visited:{},theme:''};
+var cur='mulai';
+
+function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);for(var k in o)S[k]=o[k];}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function $(s,r){return (r||document).querySelector(s);}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove('on');},2200);}
+
+/* theme */
+function applyTheme(){var r=document.documentElement;if(S.theme)r.setAttribute('data-theme',S.theme);else r.removeAttribute('data-theme');}
+$('#themeBtn').addEventListener('click',function(){
+  var dark=S.theme?S.theme==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
+  S.theme=dark?'light':'dark';applyTheme();save();
+});
+
+/* navigation */
+function buildSteps(){
+  var n=$('#steps');n.innerHTML='';
+  STEPS.forEach(function(s){
+    var b=document.createElement('button');b.type='button';b.textContent=s[1];b.dataset.go=s[0];n.appendChild(b);
+  });
+}
+function go(id,noScroll){
+  if(!document.getElementById('p-'+id))return;
+  cur=id;S.visited[id]=1;
+  $$('section.panel').forEach(function(p){p.classList.toggle('on',p.id==='p-'+id);});
+  $$('#steps button').forEach(function(b){
+    var on=b.dataset.go===id;
+    if(on)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');
+    b.classList.toggle('done',!!S.visited[b.dataset.go]);
+    if(on&&b.scrollIntoView){try{b.scrollIntoView({inline:'center',block:'nearest'});}catch(e){}}
+  });
+  var cnt=Object.keys(S.visited).length;var pct=Math.round(cnt/STEPS.length*100);
+  $('#pfill').style.width=pct+'%';$('#pbar').setAttribute('aria-valuenow',pct);
+  if(id==='hasil')buildSummary();
+  if(id!=='mengaplikasikan')stopEx();
+  if(!noScroll)window.scrollTo(0,0);
+  save();
+}
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-go]');if(t){go(t.dataset.go);}
+});
+
+/* field binding */
+function bindFields(){
+  $$('[data-k]').forEach(function(el){
+    var k=el.dataset.k;
+    if(S.f[k]!==undefined)el.value=S.f[k];
+    el.addEventListener('input',function(){S.f[k]=el.value;save();});
+    el.addEventListener('change',function(){S.f[k]=el.value;save();});
+  });
+  if(!S.f.tgl){var d=new Date();var iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');S.f.tgl=iso;$('#tgl').value=iso;}
+}
+
+/* scale */
+var SCALE=['Saya merasa kewalahan dengan banyaknya tugas sekolah atau praktik.','Saya sulit tidur karena memikirkan tugas atau ujian.','Saya merasa tegang atau gelisah saat tenggat pengumpulan mendekat.','Saya sulit berkonsentrasi saat belajar.','Saya mudah marah atau tersinggung karena hal kecil.','Saya sakit kepala atau sakit perut tanpa sebab jelas ketika tugas banyak.','Saya merasa tidak mampu memenuhi harapan guru atau orang tua.','Saya menunda tugas karena takut hasilnya jelek.'];
+var OPT=['Tidak pernah','Kadang','Sering','Hampir selalu'];
+function buildScale(){
+  var box=$('#scaleBox');box.innerHTML='';
+  SCALE.forEach(function(q,i){
+    var d=document.createElement('div');d.className='q';
+    var p=document.createElement('p');p.textContent=(i+1)+'. '+q;d.appendChild(p);
+    var o=document.createElement('div');o.className='opts';o.setAttribute('role','radiogroup');o.setAttribute('aria-label',q);
+    OPT.forEach(function(t,v){
+      var l=document.createElement('label');var inp=document.createElement('input');inp.type='radio';inp.name='sc'+i;inp.value=v;
+      if(S.scale[i]===v)inp.checked=true;
+      inp.addEventListener('change',function(){S.scale[i]=v;save();});
+      var s=document.createElement('span');s.textContent=t;l.appendChild(inp);l.appendChild(s);o.appendChild(l);
+    });
+    d.appendChild(o);box.appendChild(d);
+  });
+}
+function scaleTotal(){var t=0,n=0;for(var i=0;i<SCALE.length;i++){if(S.scale[i]!==undefined){t+=S.scale[i];n++;}}return {t:t,n:n};}
+function scaleLevel(t){return t<=8?1:(t<=16?2:3);}
+var LVL={1:['Tekanan terasa ringan','Kamu terlihat cukup mampu menghadapi tuntutan belajar saat ini. Tetap jaga pola tidur dan istirahat, dan latih teknik di Kegiatan 3 sebagai bekal saat minggu padat.'],2:['Tekanan terasa sedang','Ada tekanan yang cukup terasa. Ini wajar, dan saatnya mulai rutin memakai teknik napas, pikiran seimbang, dan pengaturan waktu. Ceritakan juga pada teman atau wali kelas.'],3:['Tekanan terasa cukup tinggi','Tekananmu terasa berat akhir-akhir ini. Kamu tidak harus menghadapinya sendirian. Coba teknik di Kegiatan 3 dan pertimbangkan bercerita ke guru BK atau orang yang kamu percaya.']};
+function showScale(){
+  var r=scaleTotal();var box=$('#scaleRes');
+  if(r.n<SCALE.length){box.innerHTML='';var p=document.createElement('div');p.className='card note';p.style.marginTop='16px';p.textContent='Jawab semua pernyataan dulu ya. Baru '+r.n+' dari '+SCALE.length+' yang terisi.';box.appendChild(p);return;}
+  var l=scaleLevel(r.t);box.innerHTML='';
+  var d=document.createElement('div');d.className='result r'+l;
+  var h=document.createElement('h3');h.textContent=LVL[l][0]+' (skor '+r.t+' dari 24)';
+  var m=document.createElement('div');m.className='meter';var i=document.createElement('i');i.style.width=Math.round(r.t/24*100)+'%';m.appendChild(i);
+  var p=document.createElement('p');p.textContent=LVL[l][1];p.style.margin='0';
+  d.appendChild(h);d.appendChild(m);d.appendChild(p);box.appendChild(d);
+  S.f.scaleDone=1;save();
+}
+$('#scaleBtn').addEventListener('click',showScale);
+
+/* chips */
+var PEMICU=['Tugas menumpuk','Ujian atau UKK','Praktik atau PKL','Kerja kelompok','Tuntutan nilai','Jadwal padat','Kurang tidur','HP dan medsos berlebihan','Membandingkan diri dengan teman','Masalah keluarga atau ekonomi'];
+var STRAT=['Napas 4-4-6','Pikiran seimbang','Daftar tugas dan prioritas','Teknik 25-5','Tidur cukup','Olahraga ringan','Bercerita ke teman atau guru','Istirahat dari HP','Belajar kelompok yang sehat'];
+function chips(id,list,arr){
+  var box=$(id);box.innerHTML='';
+  list.forEach(function(t){
+    var l=document.createElement('label');l.className='chip';
+    var inp=document.createElement('input');inp.type='checkbox';inp.value=t;inp.checked=S[arr].indexOf(t)>-1;
+    inp.addEventListener('change',function(){
+      var i=S[arr].indexOf(t);
+      if(inp.checked&&i<0)S[arr].push(t);
+      if(!inp.checked&&i>-1)S[arr].splice(i,1);
+      save();
+    });
+    var s=document.createElement('span');s.textContent=t;l.appendChild(inp);l.appendChild(s);box.appendChild(l);
+  });
+}
+
+/* tabs */
+$$('#tabs button').forEach(function(b){
+  b.addEventListener('click',function(){
+    $$('#tabs button').forEach(function(x){x.setAttribute('aria-selected',x===b?'true':'false');});
+    $$('.tp').forEach(function(p){p.classList.toggle('on',p.id==='tp-'+b.dataset.tab);});
+    if(b.dataset.tab!=='napas')stopEx();
+  });
+});
+
+/* breathing */
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+var PH=[{t:'Tarik napas',s:4,sc:1},{t:'Tahan',s:4,sc:1},{t:'Hembuskan',s:6,sc:.6}];
+function breath(orb,lbl,cycles,onTick,onEnd){
+  var stop=false,timer=null,cyc=0,pi=0,left=0;
+  function setLabel(txt,sec){lbl.innerHTML='';lbl.appendChild(document.createTextNode(txt));if(sec!=null){var s=document.createElement('span');s.className='orb-sec';s.textContent=sec;lbl.appendChild(s);}}
+  function phase(){
+    if(stop)return;
+    var p=PH[pi];left=p.s;
+    orb.style.transitionDuration=reduce?'0s':p.s+'s';
+    orb.style.transform='scale('+p.sc+')';
+    setLabel(p.t,left);
+    timer=setInterval(function(){
+      left--;
+      if(left>0){setLabel(p.t,left);return;}
+      clearInterval(timer);
+      pi++;
+      if(pi>=PH.length){pi=0;cyc++;if(onTick)onTick(cyc);if(cycles&&cyc>=cycles){finish();return;}}
+      phase();
+    },1000);
+  }
+  function finish(){stop=true;clearInterval(timer);orb.style.transitionDuration=reduce?'0s':'1.2s';orb.style.transform='scale(.6)';if(onEnd)onEnd(true);}
+  phase();
+  return {stop:function(){stop=true;clearInterval(timer);orb.style.transitionDuration=reduce?'0s':'.8s';orb.style.transform='scale(.6)';if(onEnd)onEnd(false);}};
+}
+var heroB=null,exB=null;
+function startHero(){
+  if(reduce){$('#heroOrb').style.transform='scale(.8)';return;}
+  heroB=breath($('#heroOrb'),$('#heroLbl'),0);
+}
+function stopEx(){if(exB){exB.stop();exB=null;}}
+$('#exStart').addEventListener('click',function(){
+  if(exB)return;
+  $('#exStart').disabled=true;$('#exStop').disabled=false;$('#exCount').textContent='Putaran 0 dari 5';
+  exB=breath($('#exOrb'),$('#exLbl'),5,function(c){$('#exCount').textContent='Putaran '+c+' dari 5';},function(done){
+    exB=null;$('#exStart').disabled=false;$('#exStop').disabled=true;
+    $('#exLbl').textContent=done?'Selesai. Bagus!':'Siap?';
+    if(done){$('#exCount').textContent='5 putaran selesai. Tulis perasaanmu di bawah.';S.f.napasDone=1;save();}
+  });
+});
+$('#exStop').addEventListener('click',stopEx);
+
+/* tasks */
+var PL={t:'Tinggi',s:'Sedang',r:'Rendah'};var PO={t:0,s:1,r:2};
+function fmtDate(d){if(!d)return 'tanpa tenggat';var p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d;}
+function renderTasks(){
+  var box=$('#taskList');box.innerHTML='';
+  if(!S.tasks.length){var e=document.createElement('p');e.style.color='var(--muted)';e.textContent='Belum ada tugas. Tambahkan tugas pertamamu di atas.';box.appendChild(e);return;}
+  var arr=S.tasks.map(function(t,i){return {t:t,i:i};}).sort(function(a,b){
+    if(a.t.done!==b.t.done)return a.t.done?1:-1;
+    if(PO[a.t.p]!==PO[b.t.p])return PO[a.t.p]-PO[b.t.p];
+    return (a.t.d||'9999').localeCompare(b.t.d||'9999');
+  });
+  var total=0;
+  arr.forEach(function(o){
+    var t=o.t;if(!t.done)total+=t.m||0;
+    var d=document.createElement('div');d.className='task'+(t.done?' done':'');
+    var c=document.createElement('input');c.type='checkbox';c.checked=!!t.done;c.setAttribute('aria-label','Selesai: '+t.n);
+    c.addEventListener('change',function(){S.tasks[o.i].done=c.checked;save();renderTasks();});
+    var tt=document.createElement('div');tt.className='tt';
+    var n=document.createElement('div');n.textContent=t.n;n.style.fontWeight='700';
+    var m=document.createElement('small');m.style.color='var(--muted)';m.textContent=fmtDate(t.d)+' · '+(t.m||0)+' menit';
+    tt.appendChild(n);tt.appendChild(m);
+    var pl=document.createElement('span');pl.className='pill '+t.p;pl.textContent=PL[t.p];
+    var x=document.createElement('button');x.type='button';x.className='iconbtn';x.textContent='✕';x.setAttribute('aria-label','Hapus tugas '+t.n);
+    x.addEventListener('click',function(){S.tasks.splice(o.i,1);save();renderTasks();});
+    d.appendChild(c);d.appendChild(tt);d.appendChild(pl);d.appendChild(x);box.appendChild(d);
+  });
+  var s=document.createElement('p');s.style.color='var(--muted)';s.textContent='Sisa waktu yang dibutuhkan: sekitar '+total+' menit.';box.appendChild(s);
+}
+$('#tAdd').addEventListener('click',function(){
+  var n=$('#tName').value.trim();
+  if(!n){toast('Tulis nama tugasnya dulu.');$('#tName').focus();return;}
+  S.tasks.push({n:n,d:$('#tDue').value,p:$('#tPri').value,m:parseInt($('#tMin').value,10)||0,done:false});
+  $('#tName').value='';$('#tDue').value='';save();renderTasks();
+});
+
+/* quiz */
+var QUIZ=[
+ {q:'Stres akademik paling tepat digambarkan sebagai…',o:['Tanda bahwa seseorang malas belajar','Tekanan saat tuntutan belajar terasa melebihi kemampuan atau waktu yang ada','Penyakit yang pasti butuh obat','Perasaan yang hanya dialami siswa yang nilainya jelek'],a:1,e:'Stres akademik muncul dari ketidakseimbangan antara tuntutan belajar dan sumber daya yang kita punya. Siapa pun bisa mengalaminya.'},
+ {q:'Manakah yang termasuk tanda stres pada tubuh?',o:['Sulit tidur dan sakit kepala','Nilai selalu naik','Selalu bersemangat sepanjang hari','Nafsu belajar meningkat drastis'],a:0,e:'Sulit tidur, sakit kepala, sakit perut, dan otot tegang adalah tanda fisik yang umum.'},
+ {q:'Mengapa napas 4-4-6 dengan hembusan yang lebih panjang membantu?',o:['Membuat otak berhenti berpikir sama sekali','Membantu tubuh menurunkan ketegangan dan lebih tenang','Menggantikan kebutuhan tidur','Menghilangkan semua tugas'],a:1,e:'Hembusan yang panjang dan teratur memberi sinyal ke tubuh untuk rileks, sehingga pikiran lebih mudah fokus.'},
+ {q:'Untuk pikiran "Aku pasti gagal UKK", versi yang lebih seimbang adalah…',o:['"Tidak apa-apa, tidak perlu belajar."','"Aku memang tidak berbakat."','"Aku belum siap penuh, tapi kalau berlatih bertahap aku bisa memperbaikinya."','"Semua orang pasti lebih pintar dariku."'],a:2,e:'Pikiran seimbang mengakui kondisi nyata tanpa menghakimi diri, dan mengarah pada langkah yang bisa dilakukan.'},
+ {q:'Cara terbaik menghadapi banyak tugas dengan tenggat berdekatan adalah…',o:['Menunda semuanya sampai malam terakhir','Mengerjakan yang paling mudah saja','Menulis daftar, menentukan prioritas, dan memecah tugas besar jadi langkah kecil','Begadang tiap malam'],a:2,e:'Daftar prioritas dan pemecahan tugas membuat beban terasa lebih jelas dan bisa dikerjakan.'},
+ {q:'Kapan sebaiknya kamu bercerita ke guru BK atau orang yang dipercaya?',o:['Hanya kalau sudah tidak sanggup sama sekali','Tidak perlu, semua harus dihadapi sendiri','Saat stres berlangsung lama dan mengganggu tidur, belajar, atau keseharian','Hanya kalau nilai sudah turun'],a:2,e:'Tidak perlu menunggu parah. Bercerita lebih awal membantu stres tidak menumpuk.'}
+];
+function renderQuiz(){
+  var box=$('#quiz');box.innerHTML='';
+  QUIZ.forEach(function(it,qi){
+    var c=document.createElement('div');c.className='card';
+    var h=document.createElement('h3');h.textContent=(qi+1)+'. '+it.q;c.appendChild(h);
+    var fb=document.createElement('div');fb.className='fb';fb.hidden=true;fb.setAttribute('role','status');
+    var btns=[];
+    it.o.forEach(function(t,oi){
+      var b=document.createElement('button');b.type='button';b.className='opt';b.textContent=t;btns.push(b);
+      b.addEventListener('click',function(){
+        if(S.quiz[qi]!==undefined)return;
+        S.quiz[qi]=oi;save();paint();updScore();
+      });
+      c.appendChild(b);
+    });
+    c.appendChild(fb);
+    function paint(){
+      var ch=S.quiz[qi];if(ch===undefined)return;
+      btns.forEach(function(b,i){if(i===it.a)b.classList.add('good');else if(i===ch)b.classList.add('bad');});
+      fb.hidden=false;fb.textContent=(ch===it.a?'Tepat. ':'Belum tepat. ')+it.e;
+    }
+    paint();box.appendChild(c);
+  });
+  updScore();
+}
+function quizScore(){var s=0;QUIZ.forEach(function(it,i){if(S.quiz[i]===it.a)s++;});return s;}
+function updScore(){
+  var n=Object.keys(S.quiz).length;var b=$('#quizScore');
+  if(n<QUIZ.length){b.hidden=true;return;}
+  var s=quizScore();b.hidden=false;
+  b.textContent='Skor kamu: '+s+' dari '+QUIZ.length+'. '+(s>=5?'Pemahamanmu sudah baik. Lanjutkan ke penerapan sehari-hari.':(s>=3?'Cukup baik. Baca ulang bagian yang masih keliru lalu coba lagi di kegiatan.':'Yuk ulangi materi Kegiatan 1 dan 3, lalu tanyakan ke gurumu bagian yang belum jelas.'));
+}
+
+/* summary */
+function v(k){return (S.f[k]||'').trim()||'-';}
+function buildSummary(){
+  var L=[];
+  L.push('RINGKASAN E-LKPD STRES-KU');
+  L.push('Nama: '+v('nama')+' | Kelas: '+v('kelas')+' | Jurusan: '+v('jurusan'));
+  L.push('Tanggal: '+fmtDate(S.f.tgl));
+  L.push('');
+  L.push('KEGIATAN 1 · MEMAHAMI (KASUS DITA)');
+  L.push('Pemicu stres Dita: '+v('k1a'));
+  L.push('Tanda pada tubuh dan pikiran: '+v('k1b'));
+  L.push('Saran untuk Dita: '+v('k1c'));
+  L.push('');
+  L.push('KEGIATAN 2 · MENGENALI DIRI');
+  var r=scaleTotal();
+  if(r.n===SCALE.length){L.push('Gambaran tekanan: '+LVL[scaleLevel(r.t)][0]+' (skor '+r.t+'/24, hanya untuk kesadaran diri)');}else{L.push('Skala belum diisi lengkap.');}
+  L.push('Pemicu terbesar: '+(S.pemicu.length?S.pemicu.join(', '):'-'));
+  L.push('Pemicu lain: '+v('pemicuLain'));
+  L.push('Reaksi saat stres: '+v('reaksi'));
+  L.push('');
+  L.push('KEGIATAN 3 · MENGAPLIKASIKAN');
+  L.push('Latihan napas: '+(S.f.napasDone?'sudah dilakukan':'belum')+'. Perasaan setelahnya: '+v('napasRef'));
+  L.push('Kapan berguna: '+v('napasKapan'));
+  L.push('Pikiran seimbang 1: ['+v('rf1s')+'] '+v('rf1a')+' → '+v('rf1b'));
+  L.push('Pikiran seimbang 2: ['+v('rf2s')+'] '+v('rf2a')+' → '+v('rf2b'));
+  if(S.tasks.length){L.push('Daftar tugas:');S.tasks.forEach(function(t){L.push(' - '+(t.done?'[selesai] ':'[ ] ')+t.n+' ('+fmtDate(t.d)+', prioritas '+PL[t.p]+', '+(t.m||0)+' menit)');});}
+  else L.push('Daftar tugas: -');
+  L.push('Strategi yang dipilih: '+(S.strategi.length?S.strategi.join(', '):'-'));
+  L.push('Jika '+v('jm1a')+' maka '+v('jm1b'));
+  if(S.f.jm2a||S.f.jm2b)L.push('Jika '+v('jm2a')+' maka '+v('jm2b'));
+  L.push('');
+  L.push('KEGIATAN 4 · MEREFLEKSIKAN');
+  L.push('Hal yang kusadari: '+v('j1'));
+  L.push('Teknik paling cocok: '+v('j2'));
+  L.push('Yang masih sulit: '+v('j3'));
+  L.push('Orang yang bisa diajak bicara: '+v('j4'));
+  L.push('Komitmen: 1) '+v('a1')+'  2) '+v('a2')+'  3) '+v('a3'));
+  L.push('Perasaan sekarang: '+v('mood'));
+  L.push('');
+  L.push('EVALUASI');
+  L.push(Object.keys(S.quiz).length===QUIZ.length?'Skor kuis: '+quizScore()+'/'+QUIZ.length:'Kuis belum diselesaikan ('+Object.keys(S.quiz).length+'/'+QUIZ.length+').');
+  $('#sum').textContent=L.join('\n');
+}
+$('#copyBtn').addEventListener('click',function(){
+  var txt=$('#sum').textContent;
+  function fallback(){
+    try{var r=document.createRange();r.selectNodeContents($('#sum'));var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+      if(document.execCommand('copy')){toast('Ringkasan disalin.');return;}}catch(e){}
+    toast('Tekan lama pada teks, lalu pilih Salin.');
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Ringkasan disalin.');},fallback);}else fallback();
+});
+$('#printBtn').addEventListener('click',function(){try{window.print();}catch(e){toast('Cetak tidak tersedia di sini. Gunakan Salin ringkasan.');}});
+$('#resetBtn').addEventListener('click',function(){
+  if(!window.confirm('Hapus semua jawabanmu di perangkat ini?'))return;
+  try{localStorage.removeItem(KEY);}catch(e){}
+  S={f:{},scale:{},pemicu:[],strategi:[],tasks:[],quiz:{},visited:{},theme:S.theme};
+  location.reload();
+});
+
+/* kirim ke Google Sheets via Apps Script */
+var APPS_SCRIPT_URL='PASTE_URL_WEB_APP_DI_SINI';
+function urlReady(){return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(APPS_SCRIPT_URL);}
+var sending=false;
+function sendRow(){
+  if(sending)return;
+  if(!S.f.nama||!S.f.nama.trim()){toast('Isi nama di Beranda dulu.');return;}
+  if(!urlReady()){toast('Alamat pengiriman belum dipasang. Gunakan Salin 1 baris.');return;}
+  if(!window.confirm('Kirim jawabanmu ke guru? Pastikan datanya sudah benar.'))return;
+  var b=$('#sendBtn');sending=true;b.disabled=true;b.textContent='Mengirim...';
+  var d=rowData();
+  fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({row:d.x})})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j&&j.ok){S.f.sentAt=new Date().toISOString();save();toast('Terkirim ke guru. Terima kasih!');b.textContent='Terkirim ✓';}
+      else throw new Error('x');
+    })
+    .catch(function(){toast('Gagal mengirim. Cek internet lalu coba lagi, atau pakai Salin 1 baris.');b.disabled=false;b.textContent='Kirim ke guru';})
+    .then(function(){sending=false;});
+}
+/* sheet export */
+function rowData(){
+  var r=scaleTotal();var done=r.n===SCALE.length;
+  var h=['Tanggal','Nama','Kelas','Jurusan','Skor skala (0-24)','Gambaran tekanan','Pemicu terbesar','Pemicu lain','Reaksi saat stres','K1 Pemicu Dita','K1 Tanda stres Dita','K1 Saran untuk Dita','Latihan napas','Perasaan setelah napas','Kapan napas berguna','Pikiran seimbang 1','Pikiran seimbang 2','Jumlah tugas dicatat','Strategi dipilih','Rencana jika-maka 1','Rencana jika-maka 2','Refleksi: hal disadari','Refleksi: teknik cocok','Refleksi: masih sulit','Orang untuk bercerita','Aksi 1','Aksi 2','Aksi 3','Perasaan sekarang','Skor kuis (0-6)'];
+  var q=Object.keys(S.quiz).length===QUIZ.length;
+  var x=[fmtDate(S.f.tgl),S.f.nama,S.f.kelas,S.f.jurusan,done?r.t:'',done?LVL[scaleLevel(r.t)][0]:'',S.pemicu.join('; '),S.f.pemicuLain,S.f.reaksi,S.f.k1a,S.f.k1b,S.f.k1c,S.f.napasDone?'Sudah':'Belum',S.f.napasRef,S.f.napasKapan,
+    '['+(S.f.rf1s||'')+'] '+(S.f.rf1a||'')+' -> '+(S.f.rf1b||''),'['+(S.f.rf2s||'')+'] '+(S.f.rf2a||'')+' -> '+(S.f.rf2b||''),S.tasks.length,S.strategi.join('; '),
+    'Jika '+(S.f.jm1a||'')+' maka '+(S.f.jm1b||''),'Jika '+(S.f.jm2a||'')+' maka '+(S.f.jm2b||''),S.f.j1,S.f.j2,S.f.j3,S.f.j4,S.f.a1,S.f.a2,S.f.a3,S.f.mood,q?quizScore():''];
+  return {h:h,x:x.map(function(c){return c===undefined||c===null?'':String(c);})};
+}
+function clean(c){return c.replace(/[\t\r\n]+/g,' ').trim();}
+function copyText(txt,msg){
+  function fb(){
+    var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+    var ok=false;try{ok=document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta);toast(ok?msg:'Salin gagal. Gunakan tombol Unduh CSV.');
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast(msg);},fb);}else fb();
+}
+$('#sendBtn').addEventListener('click',sendRow);
+$('#rowBtn').addEventListener('click',function(){
+  if(!S.f.nama||!S.f.nama.trim()){toast('Isi nama di Beranda dulu agar barisnya bisa dikenali.');}
+  copyText(rowData().x.map(clean).join('\t'),'1 baris disalin. Tempel di Google Sheets.');
+});
+$('#headBtn').addEventListener('click',function(){copyText(rowData().h.join('\t'),'Judul kolom disalin. Tempel di baris pertama.');});
+$('#csvBtn').addEventListener('click',function(){
+  var d=rowData();
+  function esc(c){return '"'+c.replace(/"/g,'""')+'"';}
+  var csv='\uFEFF'+d.h.map(esc).join(',')+'\r\n'+d.x.map(function(c){return esc(c.replace(/[\r\n]+/g,' '));}).join(',')+'\r\n';
+  var nm=(S.f.nama||'siswa').trim().replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'siswa';
+  var fname='STRES-KU_'+nm+'.csv';
+  var dl=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
+  dl.then(function(api){
+    if(!api){toast('Unduhan tidak tersedia di sini. Gunakan Salin 1 baris.');return;}
+    return api.save({filename:fname,data:csv}).then(function(){toast('File CSV disimpan.');},function(e){if(!e||e.code!=='declined')toast('Unduhan tidak tersedia. Gunakan Salin 1 baris.');});
+  });
+});
+
+/* init */
+load();applyTheme();buildSteps();buildScale();
+chips('#pemicu',PEMICU,'pemicu');chips('#strategi',STRAT,'strategi');
+bindFields();renderTasks();renderQuiz();
+if(S.f.scaleDone&&scaleTotal().n===SCALE.length)showScale();
+go('mulai',true);
+startHero();
+})();
+</script>
+</body>
+</html>
